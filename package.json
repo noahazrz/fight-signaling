@@ -1,18 +1,11 @@
 {
-  "name": "lobby_server",
+  "name": "fight-signaling",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js"
   },
-  "keywords": [],
-  "type": "commonjs",
   "dependencies": {
     "ws": "^8.22.0"
   }
-}
-
-"scripts": {
-  "start": "node server.js"
 }
