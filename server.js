@@ -14,9 +14,20 @@ wss.on('connection', ws => {
 
         // First message from a player: {"type":"join","room":"ABCD"}
         if (msg.type === 'join') {
+            if (!rooms[msg.room]) rooms[msg.room] = new Set();
+            const room = rooms[msg.room];
+            if (room.size >= 2) {
+                ws.send(JSON.stringify({ type: 'room_full' }));
+                return;
+            }
             ws.room = msg.room;
-            if (!rooms[ws.room]) rooms[ws.room] = new Set();
-            rooms[ws.room].add(ws);
+            room.add(ws);
+            ws.send(JSON.stringify({ type: 'joined', player: room.size })); // 1 = host, 2 = guest
+            room.forEach(p => {
+                if (p !== ws && p.readyState === WebSocket.OPEN) {
+                    p.send(JSON.stringify({ type: 'peer_joined' }));
+                }
+            });
             return;
         }
 
@@ -32,6 +43,9 @@ wss.on('connection', ws => {
         const peers = rooms[ws.room];
         if (!peers) return;
         peers.delete(ws);
+        peers.forEach(p => {
+            if (p.readyState === WebSocket.OPEN) p.send(JSON.stringify({ type: 'peer_left' }));
+        });
         if (peers.size === 0) delete rooms[ws.room];
     });
 });
